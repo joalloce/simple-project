@@ -17,6 +17,16 @@ A minimal todo app. Keep things simple — this is a learning project, not produ
 - **No premature abstraction.** Three similar lines is fine. Don't add layers, helpers, or config knobs until a second use case appears.
 - **No speculative error handling.** Validate at boundaries (HTTP input, DB results). Trust internal calls.
 
+## Adding a backend or frontend dependency
+
+The compose file mounts the source dir into the container and uses an **anonymous volume** to preserve `node_modules` from the image. After editing `package.json`, a plain rebuild is not enough — the old anonymous volume keeps masking the new install. Use:
+
+```sh
+docker compose up -d --build --force-recreate --renew-anon-volumes <service>
+```
+
+(Replace `<service>` with `backend` or `frontend`.)
+
 ## Repo layout (target)
 
 ```
