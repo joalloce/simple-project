@@ -39,6 +39,46 @@ app.post('/todos', async (req, res) => {
   }
 });
 
+app.patch('/todos/:id', async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || id <= 0) {
+    return res.status(400).json({ error: 'invalid id' });
+  }
+  if (typeof req.body?.done !== 'boolean') {
+    return res.status(400).json({ error: 'done (boolean) is required' });
+  }
+  try {
+    const { rows } = await pool.query(
+      'UPDATE todos SET done = $1 WHERE id = $2 RETURNING id, title, done, created_at',
+      [req.body.done, id]
+    );
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'not found' });
+    }
+    res.json(rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'internal error' });
+  }
+});
+
+app.delete('/todos/:id', async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || id <= 0) {
+    return res.status(400).json({ error: 'invalid id' });
+  }
+  try {
+    const { rowCount } = await pool.query('DELETE FROM todos WHERE id = $1', [id]);
+    if (rowCount === 0) {
+      return res.status(404).json({ error: 'not found' });
+    }
+    res.status(204).end();
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'internal error' });
+  }
+});
+
 await initDb();
 app.listen(port, () => {
   console.log(`backend listening on ${port}`);
