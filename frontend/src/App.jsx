@@ -30,6 +30,20 @@ export default function App() {
     }
   }
 
+  async function toggle(id, done) {
+    const res = await fetch(`${API}/todos/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ done: !done }),
+    });
+    if (res.ok) await load();
+  }
+
+  async function remove(id) {
+    const res = await fetch(`${API}/todos/${id}`, { method: 'DELETE' });
+    if (res.ok) await load();
+  }
+
   return (
     <main style={{ fontFamily: 'system-ui', maxWidth: 480, margin: '2rem auto', padding: '0 1rem' }}>
       <h1>simple todo</h1>
@@ -44,8 +58,33 @@ export default function App() {
       </form>
       <ul style={{ listStyle: 'none', padding: 0 }}>
         {todos.map((t) => (
-          <li key={t.id} style={{ padding: '0.5rem 0', borderBottom: '1px solid #eee' }}>
-            {t.title}
+          <li
+            key={t.id}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '0.5rem 0',
+              borderBottom: '1px solid #eee',
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={t.done}
+              onChange={() => toggle(t.id, t.done)}
+            />
+            <span
+              style={{
+                flex: 1,
+                textDecoration: t.done ? 'line-through' : 'none',
+                color: t.done ? '#888' : 'inherit',
+              }}
+            >
+              {t.title}
+            </span>
+            <button onClick={() => remove(t.id)} aria-label="delete">
+              ×
+            </button>
           </li>
         ))}
       </ul>
